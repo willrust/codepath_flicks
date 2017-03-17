@@ -3,9 +3,11 @@ package com.netflix.prototypes.willr.flicks;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.ListView;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
+import com.netflix.prototypes.willr.flicks.adapters.MovieArrayAdapter;
 import com.netflix.prototypes.willr.flicks.models.Movie;
 
 import org.json.JSONArray;
@@ -19,11 +21,18 @@ import cz.msebera.android.httpclient.Header;
 public class MovieListActivity extends AppCompatActivity {
 
     ArrayList<Movie> movies;
+    MovieArrayAdapter movieAdapter;
+    ListView lvItems;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movie_list);
+
+        movies = new ArrayList<>();
+        movieAdapter = new MovieArrayAdapter(this, movies);
+        lvItems = (ListView) findViewById(R.id.lvMovies);
+        lvItems.setAdapter(movieAdapter);
 
         // TODO: Move the below code to networking
         String url = "https://api.themoviedb.org/3/movie/now_playing?api_key=a07e22bc18f5cb106bfe4cc1f83ad8ed";
@@ -36,7 +45,9 @@ public class MovieListActivity extends AppCompatActivity {
 
                 try {
                     movieJsonResults = response.getJSONArray("results");
-                    movies = Movie.fromJsonArray(movieJsonResults);
+                    movies.addAll(Movie.fromJsonArray(movieJsonResults));
+                    movieAdapter.notifyDataSetChanged();
+
                     Log.d("DEBUG", movieJsonResults.toString());
                 } catch (JSONException e) {
                     e.printStackTrace();
